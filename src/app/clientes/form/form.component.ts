@@ -16,6 +16,7 @@ export class FormComponent implements OnInit{
 
   public cliente:Cliente = new Cliente();
   public titulo:String="Agregar cliente";
+  public errores:string[];
 
   ngOnInit(): void {
     this.cargarCliente();
@@ -36,7 +37,11 @@ export class FormComponent implements OnInit{
     this.clienteService.create(this.cliente).subscribe(
       response=>{
         this.router.navigate(['/clientes'])
-        swal('Cliente registrado!', `Cliente ${ this.cliente.nombre } registrado con éxito`, 'success')
+        swal('Cliente registrado!', `Cliente ${ this.cliente.nombre } registrado con éxito`, 'success');
+      },
+      err=>{
+        this.errores=err.error as string[];
+        
       }
       
     )
@@ -47,6 +52,9 @@ export class FormComponent implements OnInit{
       cliente=>{
         this.router.navigate(['/clientes'])
         swal('Cliente actualizado!', `Cliente ${ this.cliente.id } actualizado correctamente`, 'success')
+      },
+      err=>{
+        this.errores=err.error as string[];
       }
     )
   }

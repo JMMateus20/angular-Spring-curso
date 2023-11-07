@@ -7,6 +7,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import swal from 'sweetalert2';
 import { Router } from '@angular/router';
 import { map } from 'rxjs';
+import { formatDate } from '@angular/common';
+import { tap } from 'rxjs';
 
 
 @Injectable({
@@ -19,13 +21,31 @@ export class ClienteService {
   
   getClientes(): Observable<Cliente[]>{
     //return of(CLIENTES);
-    return this.http.get<Cliente[]>(this.urlEndpoint);
+    return this.http.get<Cliente[]>(this.urlEndpoint).pipe(
+      tap(response=>{
+        let clientes=response as Cliente[];
+        clientes.forEach(cliente=>{
+          console.log(cliente.nombre);
+        })
+      }),
+      map(response=>{
+        let clientes=response as Cliente[];
+        return clientes.map(cliente=>{
+          cliente.nombre=cliente.nombre.toUpperCase();
+          cliente.createAt=formatDate(cliente.createAt, 'fullDate', 'es-ES');
+          return cliente;
+        })
+      })
+    );
   }
   
   create(cliente: Cliente):Observable<Cliente>{
     return this.http.post<Cliente>(this.urlEndpoint, cliente, {headers: this.httpHeaders}).pipe(
       catchError(e => {
         if(e.status === 400){
+          if(Array.isArray(e.error)){
+              return throwError(e);
+          }
           swal('Error al crear el cliente', e.error, 'error');
         }else{
           swal('Error al crear el cliente', e.error, 'error');
@@ -55,6 +75,9 @@ export class ClienteService {
       catchError(e => {
        
         if(e.status === 400){
+          if (Array.isArray(e.error)) {
+            return throwError(e);
+          }
           swal('Error al actualizar el cliente', e.error, 'error');
         }else{
           swal('Error al actualizar el cliente', e.error.Mensaje, 'error');
@@ -66,7 +89,7 @@ export class ClienteService {
 
   delete(id:number):Observable<any>{
     return this.http.delete<any>(`${this.urlEndpoint}/${id}`, {headers:this.httpHeaders}).pipe(
-      catchError(e => {
+      catchError(e => { 
         if(e.status === 500){
           swal('Error al eliminar el cliente', e.error, 'error');
         }else{

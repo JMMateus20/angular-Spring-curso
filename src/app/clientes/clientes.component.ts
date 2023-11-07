@@ -5,6 +5,7 @@ import { ClienteService } from './cliente.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import swal from 'sweetalert2';
+import { tap } from 'rxjs';
 
 
 @Component({
@@ -18,11 +19,9 @@ export class ClientesComponent implements OnInit{
   constructor(private clienteService: ClienteService, private router: Router, private activatedRouter: ActivatedRoute, private location: Location){}
 
   ngOnInit(): void {
-    this.clienteService.getClientes().subscribe(
-      clientes => this.clientes = clientes
-    );
-    
-    
+    this.clienteService.getClientes().pipe(
+      tap(clientes=>this.clientes=clientes)
+    ).subscribe();
   }
 
   delete(cliente: Cliente):void{
