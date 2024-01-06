@@ -2,8 +2,13 @@ package com.bolsadeideas.springboot.backend.apirest.dto;
 
 
 
+import java.sql.Date;
+
+import com.bolsadeideas.springboot.backend.apirest.entity.Region;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +26,12 @@ public class RegistroClienteDTO {
 	@NotEmpty
 	@Email(message = "debe ser un email válido")
 	private String email;
+	
+	@NotNull(message = "no puede estar vacio")
+	private Date createAt;
+	
+	@NotNull(message = "no puede estar vacio")
+	private Region region;
 	
 
 }

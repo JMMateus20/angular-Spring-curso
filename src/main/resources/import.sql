@@ -1,16 +1,23 @@
+/*Populate tabla regiones*/
+INSERT INTO regiones(id, nombre) VALUES (1, 'Sudamerica');
+INSERT INTO regiones(id, nombre) VALUES (2, "Oceania");
+INSERT INTO regiones(id, nombre) VALUES (3, "Europa");
+INSERT INTO regiones(id, nombre) VALUES (4, "Norteamerica");
+INSERT INTO regiones(id, nombre) VALUES (5, "Asia");
+
 /* Populate tabla clientes */
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Andrés', 'Guzmán', 'profesor@bolsadeideas.com', '2018-01-01');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Mr. John', 'Doe', 'john.doe@gmail.com', '2018-01-02');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Linus', 'Torvalds', 'linus.torvalds@gmail.com', '2018-01-03');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Rasmus', 'Lerdorf', 'rasmus.lerdorf@gmail.com', '2018-01-04');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Erich', 'Gamma', 'erich.gamma@gmail.com', '2018-02-01');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Richard', 'Helm', 'richard.helm@gmail.com', '2018-02-10');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Ralph', 'Johnson', 'ralph.johnson@gmail.com', '2018-02-18');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('John', 'Vlissides', 'john.vlissides@gmail.com', '2018-02-28');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Dr. James', 'Gosling', 'james.gosling@gmail.com', '2018-03-03');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Magma', 'Lee', 'magma.lee@gmail.com', '2018-03-04');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Tornado', 'Roe', 'tornado.roe@gmail.com', '2018-03-05');
-INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Jade', 'Doe', 'jane.doe@gmail.com', '2018-03-06');
+INSERT INTO clientes (region_id, nombre, apellido, email, create_at) VALUES(4,'Andrés', 'Guzmán', 'profesor@bolsadeideas.com', '2018-01-01');
+INSERT INTO clientes (region_id, nombre, apellido, email, create_at) VALUES(3,'Mr. John', 'Doe', 'john.doe@gmail.com', '2018-01-02');
+INSERT INTO clientes (region_id, nombre, apellido, email, create_at) VALUES(3,'Linus', 'Torvalds', 'linus.torvalds@gmail.com', '2018-01-03');
+INSERT INTO clientes (region_id, nombre, apellido, email, create_at) VALUES(3,'Rasmus', 'Lerdorf', 'rasmus.lerdorf@gmail.com', '2018-01-04');
+INSERT INTO clientes (region_id,nombre, apellido, email, create_at) VALUES(5,'Erich', 'Gamma', 'erich.gamma@gmail.com', '2018-02-01');
+INSERT INTO clientes (region_id, nombre, apellido, email, create_at) VALUES(1,'Richard', 'Helm', 'richard.helm@gmail.com', '2018-02-10');
+INSERT INTO clientes (region_id,nombre, apellido, email, create_at) VALUES(1, 'Ralph', 'Johnson', 'ralph.johnson@gmail.com', '2018-02-18');
+INSERT INTO clientes (region_id,nombre, apellido, email, create_at) VALUES(1,'John', 'Vlissides', 'john.vlissides@gmail.com', '2018-02-28');
+INSERT INTO clientes (region_id,nombre, apellido, email, create_at) VALUES(1,'Dr. James', 'Gosling', 'james.gosling@gmail.com', '2018-03-03');
+INSERT INTO clientes (region_id,nombre, apellido, email, create_at) VALUES(4,'Magma', 'Lee', 'magma.lee@gmail.com', '2018-03-04');
+INSERT INTO clientes (region_id,nombre, apellido, email, create_at) VALUES(5,'Tornado', 'Roe', 'tornado.roe@gmail.com', '2018-03-05');
+INSERT INTO clientes (region_id,nombre, apellido, email, create_at) VALUES(5,'Jade', 'Doe', 'jane.doe@gmail.com', '2018-03-06');
 
 INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Andrés', 'Guzmán', 'profesor@bolsadeideas.com', '2018-01-01');
 INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Mr. John', 'Doe', 'john.doe@gmail.com', '2018-01-02');
@@ -134,3 +141,40 @@ INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Dr. James', 'G
 INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Magma', 'Lee', 'magma.lee@gmail.com', '2018-03-04');
 INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Tornado', 'Roe', 'tornado.roe@gmail.com', '2018-03-05');
 INSERT INTO clientes (nombre, apellido, email, create_at) VALUES('Jade', 'Doe', 'jane.doe@gmail.com', '2018-03-06');
+
+INSERT INTO roles(nombre) VALUES ("Administrador");
+INSERT INTO roles(nombre) VALUES ("Asistente");
+INSERT INTO roles(nombre) VALUES ("Revisor");
+INSERT INTO roles(nombre) VALUES ("Cliente");
+
+INSERT INTO modulos(nombre, path_base) VALUES ("CLIENTES", "/clientes");
+INSERT INTO modulos(nombre, path_base) VALUES ("PERMISOS", "/permisos");
+INSERT INTO modulos(nombre, path_base) VALUES ("MODULOS", "/modulos");
+INSERT INTO modulos(nombre, path_base) VALUES ("REGIONES", "/regiones");
+INSERT INTO modulos(nombre, path_base) VALUES ("USUARIOS", "/usuarios");
+
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("CREAR_UN_CLIENTE", "", "POST", 1, 1);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("LISTAR_TODOS_LOS_CLIENTES", "/page/[0-9]*", "GET", 0, 1);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("VER_UN_CLIENTE", "/[0-9]*", "GET", 0, 1);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("ELIMINAR_CLIENTE", "/[0-9]*", "DELETE", 0, 1);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("MODIFICAR_CLIENTE", "/[0-9]*", "PUT", 0, 1);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("CARGAR_FOTO", "/upload", "POST", 0, 1);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("VER_FOTO", "/upload/(?<nombreFoto>.+)", "GET", 0, 1);
+
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("LISTAR_PERMISOS_POR_ROL", "/[0-9]*", "GET", 0, 2);
+
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("CREAR_UN_MODULO", "", "POST", 0, 3);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("MODIFICAR_MODULO", "/[0-9]*", "PUT", 0, 3);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("AGREGAR_OPERACION", "/operaciones/[0-9]*", "POST", 0, 3);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("QUITAR_OPERACION", "/operaciones", "DELETE", 0, 3);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("LISTAR_OPERACIONES", "/operaciones/[0-9]*", "GET", 0, 3);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("MODIFICAR_OPERACION", "/operaciones", "PUT", 0, 3);
+
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("CREAR_UNA_REGION", "", "POST", 0, 4);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("LISTAR_TODAS_LAS_REGIONES", "", "GET", 0, 4);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("LISTAR_CLIENTES_POR_REGION", "/clientes/[0-9]*", "GET", 0, 4);
+
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("CREAR_UN_USUARIO", "", "POST", 1, 5);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("AGREGAR_ROL_A_USUARIO", "/roles", "POST", 0, 5);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("VER_ROLES_DE_USUARIO", "/roles/[0-9]*", "GET", 0, 5);
+INSERT INTO operaciones(nombre, path, metodo_http, publico, modulo_id) VALUES ("QUITAR_ROL_A_USUARIO", "/roles", "DELETE", 0, 5);

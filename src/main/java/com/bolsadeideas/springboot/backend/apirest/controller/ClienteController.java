@@ -1,11 +1,12 @@
 package com.bolsadeideas.springboot.backend.apirest.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -20,7 +21,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bolsadeideas.springboot.backend.apirest.dto.RegistroClienteDTO;
 import com.bolsadeideas.springboot.backend.apirest.entity.Cliente;
@@ -29,7 +32,6 @@ import com.bolsadeideas.springboot.backend.apirest.services.ClienteService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
-@CrossOrigin(origins = {"http://localhost:4200"})
 @AllArgsConstructor
 @RestController
 @RequestMapping(value = "/clientes")
@@ -81,6 +83,14 @@ public class ClienteController {
 	}
 	
 	
+	@PostMapping("/upload")
+	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo,@RequestParam("id") Long id){
+		return clienteService.upload(archivo, id);
+	}
 	
+	@GetMapping("/upload/{nombreFoto:.+}")
+	public ResponseEntity<Resource> verFoto(@PathVariable String nombreFoto){
+		return clienteService.verFoto(nombreFoto);
+	}
 
 }

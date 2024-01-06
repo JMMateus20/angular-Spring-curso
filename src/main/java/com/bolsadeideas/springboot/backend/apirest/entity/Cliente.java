@@ -3,14 +3,18 @@ package com.bolsadeideas.springboot.backend.apirest.entity;
 import java.io.Serializable;
 import java.sql.Date;
 
-import org.hibernate.annotations.CreationTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -31,17 +35,41 @@ public class Cliente implements Serializable{
 	
 	private String email;
 	
-	@CreationTimestamp
+	
+	
 	@Column(name="create_at")
 	private Date createAt;
+	
+	
+	private String foto;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "region_id")
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+	private Region region;
 
 	
-	public Cliente(String nombre, String apellido, String email) {
+	public Cliente(String nombre, String apellido, String email, Date createAt, String foto) {
 		this.nombre = nombre;
 		this.apellido = apellido;
 		this.email = email;
+		this.createAt=createAt;
+		this.foto=foto;
 		
 	}
+	
+	
+
+
+	public Cliente(String nombre, String apellido, String email, Date createAt, Region region) {
+		this.nombre = nombre;
+		this.apellido = apellido;
+		this.email = email;
+		this.createAt = createAt;
+		this.region=region;
+	}
+
+
 
 
 	/**

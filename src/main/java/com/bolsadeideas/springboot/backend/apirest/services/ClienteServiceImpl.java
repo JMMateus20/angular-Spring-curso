@@ -1,23 +1,36 @@
 package com.bolsadeideas.springboot.backend.apirest.services;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bolsadeideas.springboot.backend.apirest.dto.RegistroClienteDTO;
 import com.bolsadeideas.springboot.backend.apirest.entity.Cliente;
+import com.bolsadeideas.springboot.backend.apirest.entity.Region;
 import com.bolsadeideas.springboot.backend.apirest.exceptions.DataAccessExceptionManaged;
 import com.bolsadeideas.springboot.backend.apirest.exceptions.NotFoundExceptionManaged;
 import com.bolsadeideas.springboot.backend.apirest.repository.ClienteRepository;
+import com.bolsadeideas.springboot.backend.apirest.repository.RegionRepository;
 
 import lombok.AllArgsConstructor;
 
@@ -27,6 +40,10 @@ public class ClienteServiceImpl implements ClienteService{
 	
 	
 	private final ClienteRepository clienteRep;
+	
+	private final RegionRepository regionRep;
+	
+	private final UploadFileService uploadService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -36,7 +53,7 @@ public class ClienteServiceImpl implements ClienteService{
 
 	@Override
 	public ResponseEntity<?> insertar(RegistroClienteDTO datos) {
-		Cliente clienteNew=new Cliente(datos.getNombre(), datos.getApellido(), datos.getEmail());
+		Cliente clienteNew=new Cliente(datos.getNombre(), datos.getApellido(), datos.getEmail(), datos.getCreateAt(), datos.getRegion());
 		if (clienteRep.findByNombre(datos.getNombre()).isPresent()) {
 			
 			return new ResponseEntity<>("Ya se encuentra un cliente registrado con este nombre", HttpStatus.BAD_REQUEST);
@@ -55,6 +72,8 @@ public class ClienteServiceImpl implements ClienteService{
 		Map<String, Object> response=new HashMap<>();
 		Cliente clienteBD=clienteRep.findById(id).orElseThrow(()->new NotFoundExceptionManaged("Cliente no encontrado"));  
 		try {
+			String nombreFotoAnterior=clienteBD.getFoto();
+			uploadService.eliminar(nombreFotoAnterior);
 			clienteRep.delete(clienteBD);
 		}catch(DataAccessException e) {
 			throw new DataAccessExceptionManaged("Error al eliminar el cliente en la base de datos");
@@ -102,10 +121,13 @@ public class ClienteServiceImpl implements ClienteService{
 				return new ResponseEntity<>("Ya se encuentra un cliente registrado con este email", HttpStatus.BAD_REQUEST);
 			}
 		}
-			
+		
+		
 		clienteBD.setNombre(datos.getNombre());
 		clienteBD.setApellido(datos.getApellido());
 		clienteBD.setEmail(datos.getEmail());
+		clienteBD.setCreateAt(datos.getCreateAt());
+		clienteBD.setRegion(datos.getRegion());
 		Cliente clienteActualizado=null;
 		try {
 			clienteActualizado=clienteRep.save(clienteBD);
@@ -121,6 +143,44 @@ public class ClienteServiceImpl implements ClienteService{
 	@Override
 	public Page<Cliente> listar(Pageable pageable) {
 		return clienteRep.findAll(pageable);
+	}
+
+	@Override
+	public ResponseEntity<?> upload(MultipartFile archivo, Long id) {
+		Map<String, Object> response=new HashMap<>();
+		Cliente clienteBD=clienteRep.findById(id).orElseThrow(()->new NotFoundExceptionManaged("cliente no encontrado"));
+		if (!archivo.isEmpty()) {
+			
+			String nombreArchivo=null;
+			try {
+				nombreArchivo=uploadService.copiar(archivo);
+			} catch (IOException e) {
+				response.put("error", "Error, no se pudo subir la imagen");
+				return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			String nombreFotoAnterior=clienteBD.getFoto();
+			uploadService.eliminar(nombreFotoAnterior);
+			clienteBD.setFoto(nombreArchivo);
+			clienteRep.save(clienteBD);
+			response.put("cliente", clienteBD);
+			response.put("mensaje", "Imagen subida correctamente: " + nombreArchivo);
+		}
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		
+	}
+
+	@Override
+	public ResponseEntity<Resource> verFoto(String nombreFoto) {
+		
+		Resource recurso=null;
+		try {
+			recurso=uploadService.cargar(nombreFoto);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		HttpHeaders cabecera=new HttpHeaders();
+		cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"");
+		return new ResponseEntity<Resource>(recurso, cabecera, HttpStatus.OK);
 	}
 
 }

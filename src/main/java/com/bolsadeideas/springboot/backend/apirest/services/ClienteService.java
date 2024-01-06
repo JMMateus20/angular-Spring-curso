@@ -2,9 +2,11 @@ package com.bolsadeideas.springboot.backend.apirest.services;
 
 import java.util.List;
 
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bolsadeideas.springboot.backend.apirest.dto.RegistroClienteDTO;
 import com.bolsadeideas.springboot.backend.apirest.entity.Cliente;
@@ -25,5 +27,9 @@ public interface ClienteService {
 	ResponseEntity<?> encontrar(Long id);
 	
 	ResponseEntity<?> modificar(Long id, RegistroClienteDTO datos);
+	
+	ResponseEntity<?> upload(MultipartFile archivo, Long id);
+	
+	ResponseEntity<Resource> verFoto(String nombreFoto); 
 
 }
