@@ -1,5 +1,7 @@
 package com.bolsadeideas.springboot.backend.apirest.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +16,9 @@ public interface OperacionRepository extends JpaRepository<Operacion, Long> {
 	
 	@Query("SELECT O FROM Operacion as O WHERE O.modulo=:modulo")
 	Page<Operacion> listarPorModulo(@Param(value="modulo") Modulo modulo, Pageable pageable);
+	
+	
+	@Query("SELECT O FROM Operacion as O WHERE O.publico=true")
+	List<Operacion> buscarOperacionesPublicas();
 
 }

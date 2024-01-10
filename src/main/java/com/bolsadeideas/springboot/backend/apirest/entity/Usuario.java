@@ -3,8 +3,10 @@ package com.bolsadeideas.springboot.backend.apirest.entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -65,12 +67,75 @@ public class Usuario implements Serializable, UserDetails{
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return this.roles.stream().map(rol->new SimpleGrantedAuthority("ROLE_"+rol.getNombre()))
+		
+		//FORMA 1: OPTIMIZADA:
+		
+		
+		
+		//se utiliza Stream.concat para concatenar tanto las autoridades de roles como de operaciones	
+		return this.roles.stream().flatMap(rol->Stream
+				.concat(Stream.of(
+						new SimpleGrantedAuthority("ROLE_"+rol.getNombre())), 
+						rol.getOperaciones().stream()
+						.map(op->new SimpleGrantedAuthority(op.getNombre()))))
+				.distinct() //el distinct es para eliminar las operaciones duplicadas en caso que varios roles tengan una misma operacion
 				.collect(Collectors.toList());
+		
+		//se utiliza flatMap para crear un flujo unico que recorre cada rol de la lista roles
+		//convertirlo a autoridad y, enseguida, mapear cada operacion de dicho rol actual y convertirlo
+		//igualmente a una autoridad
+		
+		
+		
+		//FORMA 2: LARGA
+		
+		/*
+		
+		List<SimpleGrantedAuthority> authorities= this.roles.stream()
+				.map(rol->new SimpleGrantedAuthority("ROLE_"+rol.getNombre()))
+				.collect(Collectors.toList());
+		
+		List<String> operacionesDeUsuario=this.roles.stream()
+				.flatMap(rol->rol.getOperaciones() //flatmap funciona para meter un map dentro de otro
+				//se crea un flujo único para cada rol y las operaciones de dicho rol
+				.stream().map(Operacion::getNombre))
+				.distinct()  
+				.collect(Collectors.toList());
+		
+		
+		
+		List<SimpleGrantedAuthority> authoritiesOperaciones=operacionesDeUsuario.stream()
+				.map(op->new SimpleGrantedAuthority(op))
+				.collect(Collectors.toList());
+		
+		authorities.addAll(authoritiesOperaciones);
+		return authorities;
+		
+		*/
+		
+		//FORMA 3: ANTIGUA (NO RECOMENDADA)
+		
+		/*
+		
+		List<SimpleGrantedAuthority> authorities=new ArrayList<>();
+		for (Role rol:this.roles) {
+			SimpleGrantedAuthority authority=new SimpleGrantedAuthority("ROLE_"+rol.getNombre());
+			authorities.add(authority);
+			for (Operacion op:rol.getOperaciones()) {
+				SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(op.getNombre());
+				if (!authorities.contains(simpleGrantedAuthority)) {
+					authorities.add(simpleGrantedAuthority);	
+				}else {
+					continue;
+				}
+				
+			}
+		}
+		
+		return authorities;
+		*/
+		
 	}
-
-
-
 
 	@Override
 	public boolean isAccountNonExpired() {

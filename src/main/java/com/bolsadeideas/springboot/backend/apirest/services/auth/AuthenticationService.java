@@ -3,21 +3,28 @@ package com.bolsadeideas.springboot.backend.apirest.services.auth;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.bolsadeideas.springboot.backend.apirest.dto.LoginRequestDTO;
 import com.bolsadeideas.springboot.backend.apirest.dto.LoginResponseDTO;
 import com.bolsadeideas.springboot.backend.apirest.dto.UsuarioResponseDTO;
+import com.bolsadeideas.springboot.backend.apirest.entity.JwtToken;
 import com.bolsadeideas.springboot.backend.apirest.entity.Usuario;
 import com.bolsadeideas.springboot.backend.apirest.exceptions.AuthenticationExceptionManaged;
+import com.bolsadeideas.springboot.backend.apirest.repository.JwtTokenRepository;
 import com.bolsadeideas.springboot.backend.apirest.repository.UsuarioRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthenticationService {
@@ -31,22 +38,26 @@ public class AuthenticationService {
 	@Autowired
 	private UsuarioRepository usuarioRep;
 	
+	@Autowired
+	private JwtTokenRepository jwtTokenRep;
+	
 	
 	public LoginResponseDTO login(LoginRequestDTO credenciales) {
 		UsernamePasswordAuthenticationToken upat=new UsernamePasswordAuthenticationToken(credenciales.getUsername(), credenciales.getContrasena());
-		try {
-			authManager.authenticate(upat);
-		}catch(AuthenticationException e) {
-			throw new AuthenticationExceptionManaged("Username o contraseña incorrectas");
-		}
+		
+		authManager.authenticate(upat);
+		
+			
 		Usuario usuario=this.usuarioRep.findByUsername(credenciales.getUsername()).get();
-		return new LoginResponseDTO(this.jwtService.generarToken(usuario, generarClaims(usuario)));
+		String jwt=this.jwtService.generarToken(usuario, generarClaims(usuario));
+		this.jwtTokenRep.save(new JwtToken(jwt, jwtService.extractExpiration(jwt), true, usuario));
+		return new LoginResponseDTO(jwt);
 	}
 	
 	private Map<String, Object> generarClaims(Usuario usuario){
 		Map<String, Object> extraClaims=new HashMap<>();
-		List<String> roles=usuario.getRoles().stream().map(rol->rol.getNombre()).collect(Collectors.toList());
-		extraClaims.put("roles", roles);
+		extraClaims.put("permisos", usuario.getAuthorities());
+		
 		return extraClaims;
 	}
 	
@@ -71,6 +82,21 @@ public class AuthenticationService {
 				usuarioBD.getRoles().stream().map(rol->rol.getNombre()).collect(Collectors.toList()));
 		respuesta.put("usuario", dto);
 		return respuesta;
+	}
+	
+	
+	public void logout(HttpServletRequest request) {
+		String jwt=jwtService.extraerTokenDeRequest(request);  //se extrae el token de la peticion
+		if (jwt==null || !StringUtils.hasText(jwt)) {
+			return;
+		}
+		Optional<JwtToken> tokenOptional=jwtTokenRep.findByToken(jwt); //se busca el token en la tabla jwt_tokens
+		if (tokenOptional.isPresent() && tokenOptional.get().isValid()) { //si el token si esta en la bd y aun es valido
+			JwtToken tokenBD=tokenOptional.get();
+			tokenBD.setValid(false);   //se invalida para que ya no se pueda utilizar
+			jwtTokenRep.save(tokenBD);   //se guardan los cambios en la bd.
+			
+		}
 	}
 
 }

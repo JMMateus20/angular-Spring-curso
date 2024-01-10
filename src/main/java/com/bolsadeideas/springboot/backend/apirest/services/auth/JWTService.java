@@ -13,6 +13,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.bolsadeideas.springboot.backend.apirest.entity.CryptoKey;
 import com.bolsadeideas.springboot.backend.apirest.entity.Usuario;
@@ -25,6 +26,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class JWTService {
@@ -47,6 +49,8 @@ public class JWTService {
 	
 	private String secretKey;
 	
+	private static String CRYPTO_KEY;
+	
 	
 	@PostConstruct
 	public void metodoPostInyeccionDeDependencias() {
@@ -54,47 +58,35 @@ public class JWTService {
 		//se genera aleatoriamente cada vez que se sube el servidor gracias a la clase
 		//CryptoKeyGenerator
 		String cryptoKey=skg.generateBase64CryptoKey();
+		
 		System.out.println("cryptokey:" + cryptoKey);
-		if (cryptoRep.findAll().isEmpty()) {
-			//la clave secreta o secret key en backoffice en la bd debio haber sido encriptada por primera vez usando la clave generada en la aplicación guardada a continuacion
-			CryptoKey cryptoKeyNew=cryptoRep.save(new CryptoKey(cryptoKey, true));
-			System.out.println("CryptoKey nueva: " + cryptoKeyNew.getCryptoKey());
-			//secretKeyRep.save(new SecretKeyEnc(encrypt("aG9sYU11w7FlcXVpdG9ub3Nlbm9zZW5vc2Vuc3Nvamloemp6bnhieHhlanUzaGN1aTNoZjNvaWozZnUzOHU5MmQ5M2lpY2pjM2xqY25qM25jajN2M2pjM2p1M2hmdTNoZnUzaGZ1bzNqeGl4amlvZTJreG8yemwyd216a214Mmt4bTJlanhuMmVqamVkajJqaHU0eTc2Mjc2NzI0dGZ5Mmhocm5janJuam5jM2pjbjNqY25qY253ZGNud2N3Y3djaG53am56bmh4dnhoYnhua21ra3pta2p3aHd5cnRycXE1MzI1NDI1MjYzNzM4Mzk4MzAwMmpramRrZWtramhoYWJjZGVmZ2hpamtsbW7DsW9wcXJzdHV2d3h5eg==", cryptoKeyNew.getCryptoKey()), true)); 
-			//se extrae la secretKey de los tokens desencriptandola de la base de datos usando la cryptokey guardada por primera vez anteriormente.
-			secretKey=decrypt(secretKeyRep.findById(1L).get().getSecretKey(), cryptoKeyNew.getCryptoKey());
-			
+		
+		//si ya hay claves para el algoritmo bouncyCastle en la tabla crypto_keys, entonces
+		//se busca el ultimo registro de la tabla crypto_keys y token_secret_key ya que 
+		//quiere decir que el ultimo registro de la tabla crypto_keys es la llave maestra que
+		//desencripta el ultimo registro de la tabla token_secret_key, que es el secret_key que firma los tokens
+		CryptoKey cryptoEntity=this.cryptoRep.encontrarUltimo();
+		SecretKeyEnc secretEntity=this.secretKeyRep.encontrarUltimo();
+		if (cryptoEntity.isValid() && secretEntity.isValid()) { //si ambos registros son validos entonces
+			System.out.println(secretEntity.getSecretKey());
+			//se desencripta la ultima secret_key de la tabla token_secret_key usando la ultima crypto_key valida
+			secretKey=decrypt(secretEntity.getSecretKey(), cryptoEntity.getCryptoKey());
+			System.out.println("secret key desencriptada:" + secretKey);
+			//una vez desencriptada la secret_key para su uso en las peticiones,
+			//se procede a invalidar esos ultimos registros validos
+			cryptoEntity.setValid(false);
+			secretEntity.setValid(false);
+			cryptoRep.save(cryptoEntity);
+			secretKeyRep.save(secretEntity);
 		}else {
-			//si ya hay claves para el algoritmo bouncyCastle en la tabla crypto_keys, entonces
-			//se busca el ultimo registro de la tabla crypto_keys y token_secret_key ya que 
-			//quiere decir que el ultimo registro de la tabla crypto_keys es la llave maestra que
-			//desencripta el ultimo registro de la tabla token_secret_key, que es el secret_key que firma los tokens
-			CryptoKey cryptoEntity=this.cryptoRep.encontrarUltimo();
-			SecretKeyEnc secretEntity=this.secretKeyRep.encontrarUltimo();
-			if (cryptoEntity.isValid() && secretEntity.isValid()) { //si ambos registros son validos entonces
-				System.out.println(secretEntity.getSecretKey());
-				//se desencripta la ultima secret_key de la tabla token_secret_key usando la ultima crypto_key valida
-				secretKey=decrypt(secretEntity.getSecretKey(), cryptoEntity.getCryptoKey());
-				System.out.println("secret key desencriptada:" + secretKey);
-				//una vez desencriptada la secret_key para su uso en las peticiones,
-				//se procede a invalidar esos ultimos registros validos
-				cryptoEntity.setValid(false);
-				secretEntity.setValid(false);
-				cryptoRep.save(cryptoEntity);
-				secretKeyRep.save(secretEntity);
-			}else {
-				throw new InternalServerExceptionManaged("No se pudo realizar el proceso de encriptado y desencriptado de la secretKey");
-			}
-			//se crea nuevo registro para la tabla crypto_keys con la crypto_key que se genera aleatoriamente cada vez que se ejecuta el server
-			CryptoKey cryptoKeyNew=this.cryptoRep.save(new CryptoKey(cryptoKey, true));
-			//se genera un nuevo registro para la tabla token_secret_key valido, utilizando la nueva crypto_key registrada
-			//para encriptar nuevamente la secret_key que firma los tokens utilizando los metodos de la clase
-			//CryptoService
-			this.secretKeyRep.save(new SecretKeyEnc(encrypt(secretKey, cryptoKeyNew.getCryptoKey()), true));
-			
-			
+			throw new InternalServerExceptionManaged("No se pudo realizar el proceso de encriptado y desencriptado de la secretKey");
 		}
-		
-		
+		//se crea nuevo registro para la tabla crypto_keys con la crypto_key que se genera aleatoriamente cada vez que se ejecuta el server
+		CryptoKey cryptoKeyNew=this.cryptoRep.save(new CryptoKey(cryptoKey, true));
+		//se genera un nuevo registro para la tabla token_secret_key valido, utilizando la nueva crypto_key registrada
+		//para encriptar nuevamente la secret_key que firma los tokens utilizando los metodos de la clase
+		//CryptoService
+		this.secretKeyRep.save(new SecretKeyEnc(encrypt(secretKey, cryptoKeyNew.getCryptoKey()), true));
 		
 		
 	}
@@ -127,6 +119,9 @@ public class JWTService {
 		return extractAllClaims(jwt).getSubject();
 	}
 	
+	public Date extractExpiration(String jwt) {
+		return extractAllClaims(jwt).getExpiration();
+	}
 	
 	private Claims extractAllClaims(String jwt) {
 		return Jwts.parser().verifyWith(generarKey()).build()
@@ -149,6 +144,15 @@ public class JWTService {
 		}catch(Exception e) {
 			throw new InternalServerExceptionManaged("No se pudo desencriptar la clave secreta");
 		}
+	}
+	
+	
+	public String extraerTokenDeRequest(HttpServletRequest request) {
+		String authHeader=request.getHeader("Authorization");
+		if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
+			return null;
+		}
+		return authHeader.split(" ")[1];
 	}
 	
 	
