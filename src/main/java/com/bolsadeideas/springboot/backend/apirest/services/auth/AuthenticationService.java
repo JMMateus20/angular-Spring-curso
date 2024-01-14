@@ -56,8 +56,9 @@ public class AuthenticationService {
 	
 	private Map<String, Object> generarClaims(Usuario usuario){
 		Map<String, Object> extraClaims=new HashMap<>();
-		extraClaims.put("permisos", usuario.getAuthorities());
-		
+		List<String> permisos=usuario.getAuthorities().stream().map(per->per.getAuthority()).collect(Collectors.toList()); //se mapean los authorities del usuario a tipo string para que en angular se puedan leer
+		extraClaims.put("permisos", permisos);
+		extraClaims.put("id", usuario.getId());
 		return extraClaims;
 	}
 	
