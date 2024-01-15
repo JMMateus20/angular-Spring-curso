@@ -1,0 +1,51 @@
+<div *ngIf="modalService.modal" class="abrir-modal animacion fadeIn">
+    <div class="modal" tabindex="-1" style="display: block;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalle del cliente</h5>
+                    <button (click)="cerrarModal()" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm">
+                                <ul class="list-group text-dark mb-3" *ngIf="cliente">
+                                    <li class="list-group-item">{{cliente.nombre}}</li>
+                                    <li class="list-group-item">{{cliente.apellido}}</li>
+                                    <li class="list-group-item">{{cliente.email}}</li>
+                                    <li class="list-group-item">{{cliente.createAt}}</li>
+                                    <li *ngIf="cliente.region.nombre!=null" class="list-group-item">{{cliente.region.nombre}}</li>
+                                </ul>
+                                <div class="input-group" *ngIf="mostrarBotones('CARGAR_FOTO')">
+                                    <div class="custom-file">
+                                        <label for="formFileLg" class="form-label">Subir foto</label>
+                                        <input (change)="seleccionarFoto($event)" class="custom-file-input" id="formFileLg" type="file">
+                                    </div>
+                                    <div class="input-group-append">
+                                        <button (click)="subirFoto()" class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04" [disabled]="!imagenSeleccionada">Send</button>
+                                    </div>
+                                </div>
+                                <div *ngIf="mostrarBotones('CARGAR_FOTO')" class="progress" role="progressbar" aria-label="Basic example" attr.aria-valuenow="{{progreso}}" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar" [ngStyle]="{width:progreso+'%'}">
+                                        {{progreso}}%
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-sm">
+                                <img *ngIf="cliente?.foto" src="http://localhost:8080/clientes/upload/{{cliente.foto}}" alt="Foto de perfil" class="img-thumbnail rounded">
+                                <!-- llamamos al backend al metodo verFoto del clienteController-->
+                                <!--validamos si el cliente existe y si tiene la foto, si no tiene foto no lo muestra-->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button (click)="cerrarModal()" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

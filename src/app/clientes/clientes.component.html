@@ -1,8 +1,9 @@
+<app-detalle *ngIf="clienteSeleccionado" [cliente]="clienteSeleccionado"></app-detalle>
 <div class="card border-primary mb-3">
     <div class="card-header">Clientes</div>
     <div class="card-body text-primary">
         <h5 class="card-title">Listado de clientes</h5>
-        <div class="my-2 text-left">
+        <div *ngIf="!mostrarContenido('ROLE_Cliente')" class="my-2 text-left">
             <button class="btn btn-rounded btn-primary" type="button" routerLink="/clientes/form">Crear cliente</button>
         </div>
         <div *ngIf="clientes?.length == 0" class="alert alert-info">
@@ -17,7 +18,8 @@
                     <th>email</th>
                     <th>fecha-creacion</th>
                     <th>editar</th>
-                    <th>eliminar</th>
+                    <th *ngIf="mostrarContenido('ELIMINAR_CLIENTE')">eliminar</th>
+                    <th>Detalle</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,12 +32,16 @@
                     <td>
                         <button type="button" name="button" [routerLink]="['/clientes/form', cliente.id]" class="btn btn-primary">editar</button>
                     </td>
-                    <td>
+                    <td *ngIf="mostrarContenido('ELIMINAR_CLIENTE')">
                         <button type="button" name="button" (click)="delete(cliente)" class="btn btn-primary">eliminar</button>
+                    </td>
+                    <td><img (click)="abrirModal(cliente)" *ngIf="cliente?.foto" src="http://localhost:8080/clientes/upload/{{cliente.foto}}" alt="Foto de perfil" class="img-thumbnail rounded" style="width: 64px; cursor: pointer;">
+                        <img (click)="abrirModal(cliente)" *ngIf="!cliente?.foto" src="http://localhost:8080/images/no-usuario.png" alt="Foto de perfil" class="img-thumbnail rounded" style="width: 64px; cursor: pointer;">
                     </td>
                 </tr>
             </tbody>
 
         </table>
+        <app-paginator *ngIf="paginador" [paginador]="paginador"></app-paginator>
     </div>
 </div>

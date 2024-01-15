@@ -1,0 +1,21 @@
+<ul *ngIf="paginas?.length>0" class="pagination">
+    <li class="page-item" *ngIf="paginador.number<paginador.totalPages-1">
+        <a class="page-link" [routerLink]="['/clientes/page', paginador.totalPages-1]">Ultima Página</a>
+    </li>
+    <li class="page-item" *ngIf="paginador.number>0">
+        <a class="page-link" [routerLink]="['/clientes/page', paginador.number-1]">Atras</a>
+    </li>
+    <li class="page-item" *ngFor="let numeroPagina of paginas" [ngClass]="numeroPagina-1==paginador.number?'disabled':''">
+        <!--el ngClass es para desactivar el boton de la pagina cuando ya estemos dentro de ella, es decir, que se vea como desactivada-->
+        <span class="page-link" *ngIf="numeroPagina-1==paginador.number">{{numeroPagina}}</span>
+        <a *ngIf="numeroPagina-1!=paginador.number" class="page-link" [routerLink]="['/clientes/page', numeroPagina-1]">{{numeroPagina}}</a>
+    </li>
+    <li class="page-item" *ngIf="paginador.number<paginador.totalPages-1">
+        <a class="page-link" [routerLink]="['/clientes/page', paginador.number+1]">Siguiente</a>
+    </li>
+    <br>
+    <li class="page-item" *ngIf="paginador.number>0">
+        <a class="page-link" [routerLink]="['/clientes/page', 0]">Primera Página</a>
+    </li>
+
+</ul>
