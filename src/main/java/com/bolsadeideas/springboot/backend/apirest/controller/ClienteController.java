@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bolsadeideas.springboot.backend.apirest.dto.RegistroClienteDTO;
+import com.bolsadeideas.springboot.backend.apirest.dto.RegistroFracturaDTO;
 import com.bolsadeideas.springboot.backend.apirest.entity.Cliente;
 import com.bolsadeideas.springboot.backend.apirest.services.ClienteService;
 
@@ -91,6 +92,21 @@ public class ClienteController {
 	@GetMapping("/upload/{nombreFoto:.+}")
 	public ResponseEntity<Resource> verFoto(@PathVariable String nombreFoto){
 		return clienteService.verFoto(nombreFoto);
+	}
+	
+	
+	@PostMapping("/facturas/{idCliente}")
+	public ResponseEntity<?> agregarFactura(@PathVariable Long idCliente, @Valid @RequestBody RegistroFracturaDTO datos, BindingResult resultado){
+		if (resultado.hasErrors()) {
+			return ResponseEntity.badRequest().body(resultado.getFieldErrors().stream().map(err->"El campo '" + err.getField() + "' " + err.getDefaultMessage()).collect(Collectors.toList()));
+		}
+		return this.clienteService.agregarFactura(idCliente, datos);
+	}
+	
+	
+	@DeleteMapping("/facturas")
+	public ResponseEntity<?> eliminarFactura(@RequestParam(name = "cliente") Long idCliente,@RequestParam(name = "factura") Long idFactura){
+		return this.clienteService.eliminarFactura(idCliente, idFactura);
 	}
 
 }

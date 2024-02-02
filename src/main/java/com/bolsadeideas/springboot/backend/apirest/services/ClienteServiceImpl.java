@@ -24,12 +24,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bolsadeideas.springboot.backend.apirest.dto.FacturasDeClienteResponse;
 import com.bolsadeideas.springboot.backend.apirest.dto.RegistroClienteDTO;
+import com.bolsadeideas.springboot.backend.apirest.dto.RegistroFracturaDTO;
 import com.bolsadeideas.springboot.backend.apirest.entity.Cliente;
+import com.bolsadeideas.springboot.backend.apirest.entity.Factura;
 import com.bolsadeideas.springboot.backend.apirest.entity.Region;
 import com.bolsadeideas.springboot.backend.apirest.exceptions.DataAccessExceptionManaged;
 import com.bolsadeideas.springboot.backend.apirest.exceptions.NotFoundExceptionManaged;
 import com.bolsadeideas.springboot.backend.apirest.repository.ClienteRepository;
+import com.bolsadeideas.springboot.backend.apirest.repository.FacturaRepository;
 import com.bolsadeideas.springboot.backend.apirest.repository.RegionRepository;
 
 import lombok.AllArgsConstructor;
@@ -44,6 +48,7 @@ public class ClienteServiceImpl implements ClienteService{
 	private final RegionRepository regionRep;
 	
 	private final UploadFileService uploadService;
+	private final FacturaRepository facturaRep;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -181,6 +186,33 @@ public class ClienteServiceImpl implements ClienteService{
 		HttpHeaders cabecera=new HttpHeaders();
 		cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"");
 		return new ResponseEntity<Resource>(recurso, cabecera, HttpStatus.OK);
+	}
+
+	@Override
+	public ResponseEntity<?> agregarFactura(Long idCliente, RegistroFracturaDTO datos) {
+		Map<String, Object> respuesta=new HashMap<>();
+		Cliente clienteBD=clienteRep.findById(idCliente).orElseThrow(()->new NotFoundExceptionManaged("cliente no encontrado"));
+		Factura factura=new Factura(datos.getDescripcion(), datos.getObservacion(), clienteBD);
+		clienteBD.getFacturas().add(factura);
+		clienteRep.save(clienteBD);
+		FacturasDeClienteResponse dto=new FacturasDeClienteResponse(factura.getId(), factura.getDescripcion(), factura.getObservacion(), factura.getCreateAt());
+		respuesta.put("factura", dto);
+		return new ResponseEntity<>(respuesta, HttpStatus.CREATED);
+	}
+
+	@Override
+	public ResponseEntity<?> eliminarFactura(Long idCliente, Long idFactura) {
+		Map<String, Object> respuesta=new HashMap<>();
+		Cliente clienteBD=clienteRep.findById(idCliente).orElseThrow(()->new NotFoundExceptionManaged("cliente no encontrado"));
+		Factura facturaBD=facturaRep.findById(idFactura).orElseThrow(()->new NotFoundExceptionManaged("Factura no encontrada"));
+		if (!clienteBD.getFacturas().contains(facturaBD)) {
+			respuesta.put("mensaje", "este cliente no tiene la factura con id " + facturaBD.getId());
+			return ResponseEntity.badRequest().body(respuesta);
+		}
+		clienteBD.getFacturas().remove(facturaBD);
+		this.clienteRep.save(clienteBD);
+		respuesta.put("mensaje", "Se ha eliminado la factura correctamente");
+		return ResponseEntity.ok(respuesta);
 	}
 
 }

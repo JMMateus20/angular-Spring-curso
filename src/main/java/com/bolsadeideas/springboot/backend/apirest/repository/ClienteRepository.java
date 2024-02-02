@@ -6,9 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.bolsadeideas.springboot.backend.apirest.entity.Cliente;
 
+import jakarta.validation.constraints.Size;
+
 public interface ClienteRepository extends JpaRepository<Cliente, Long>{
 	
 	Optional<Cliente> findByNombre(String nombre);
 	Optional<Cliente> findByEmail(String email);
-
+	
+	
 }

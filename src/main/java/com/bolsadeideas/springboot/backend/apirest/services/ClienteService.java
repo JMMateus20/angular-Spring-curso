@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bolsadeideas.springboot.backend.apirest.dto.RegistroClienteDTO;
+import com.bolsadeideas.springboot.backend.apirest.dto.RegistroFracturaDTO;
 import com.bolsadeideas.springboot.backend.apirest.entity.Cliente;
 
 public interface ClienteService {
@@ -30,6 +31,11 @@ public interface ClienteService {
 	
 	ResponseEntity<?> upload(MultipartFile archivo, Long id);
 	
-	ResponseEntity<Resource> verFoto(String nombreFoto); 
+	ResponseEntity<Resource> verFoto(String nombreFoto);
+	
+	
+	ResponseEntity<?> agregarFactura(Long idCliente, RegistroFracturaDTO datos);
+	
+	ResponseEntity<?> eliminarFactura(Long idCliente, Long idFactura);
 
 }

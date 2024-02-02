@@ -1,9 +1,12 @@
 package com.bolsadeideas.springboot.backend.apirest.entity;
 
 import java.io.Serializable;
-import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,70 +23,60 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data
-@Entity
 @NoArgsConstructor
-@Table(name="clientes")
-public class Cliente implements Serializable{
+@Entity
+@Table(name="facturas")
+public class Factura implements Serializable{
 	
+	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
+	private String descripcion;
+	@Column(nullable = true)
+	private String observacion;
 	
-	private String nombre;
-	private String apellido;
-	
-	
-	private String email;
-	
-	
-	@Column(name="create_at")
+	@CreationTimestamp
 	private Date createAt;
 	
 	
-	private String foto;
-	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "region_id")
-	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-	private Region region;
-	
 	@JsonProperty(access = Access.WRITE_ONLY)
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "cliente", fetch = FetchType.LAZY)
-	private List<Factura> facturas=new ArrayList<>();
-
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)  //lazy solo cargará el objeto Cliente cuando se llame al getter de ese atributo
+	@JoinColumn(name="cliente_id")
+	private Cliente cliente;
 	
-	public Cliente(String nombre, String apellido, String email, Date createAt, String foto) {
-		this.nombre = nombre;
-		this.apellido = apellido;
-		this.email = email;
-		this.createAt=createAt;
-		this.foto=foto;
-		
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "factura", fetch = FetchType.LAZY)
+	private List<ItemFactura> items=new ArrayList<>();
+
+
+	public Factura(String descripcion, String observacion, Cliente cliente) {
+		this.descripcion = descripcion;
+		this.observacion = observacion;
+		this.cliente = cliente;
 	}
 	
 	
-
-
-	public Cliente(String nombre, String apellido, String email, Date createAt, Region region) {
-		this.nombre = nombre;
-		this.apellido = apellido;
-		this.email = email;
-		this.createAt = createAt;
-		this.region=region;
+	public Long calcularTotal() {
+		return this.getItems().stream().mapToLong(ItemFactura::calcularImporte).sum();
 	}
-
-
-
-
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	
+	
+	
+	
+	
+	
+
 }
