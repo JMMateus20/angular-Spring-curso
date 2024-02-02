@@ -10,6 +10,7 @@ import { formatDate } from '@angular/common';
 import { tap } from 'rxjs';
 import { Region } from './region';
 import { LoginService } from '../usuarios/login.service';
+import { FacturaRequest } from './factura-request';
 
 
 @Injectable({
@@ -135,9 +136,25 @@ export class ClienteService {
   
   }
 
+  agregarFactura(idCliente:number, datos:FacturaRequest):Observable<any>{
+    return this.http.post<any>(this.urlEndpoint+`/facturas/${idCliente}`, datos);
+
+  }
+
 
   verificarPermiso(permiso:string):boolean{
     return this.loginService.tienePermiso(permiso);
+  }
+
+
+  listarFacturas(id:number):Observable<any>{
+    return this.http.get<any>(`http://localhost:8080/facturas/${id}?page=0`);
+  }
+
+
+  eliminarFactura(idCliente:number, idFactura:number):Observable<any>{
+    return this.http.delete<any>(this.urlEndpoint+`/facturas?cliente=${idCliente}&factura=${idFactura}`);
+    
   }
   
 

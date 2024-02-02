@@ -6,6 +6,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import swal from 'sweetalert2';
 import { tap } from 'rxjs';
+import { Factura } from './factura';
+import { LoginService } from '../usuarios/login.service';
 
 
 
@@ -15,11 +17,12 @@ import { tap } from 'rxjs';
   styleUrls: ['./clientes.component.css']
 })
 export class ClientesComponent implements OnInit{
-  clientes: Cliente[];
+  clientes: Cliente[]=[];
+  
   paginador:any;
   clienteSeleccionado: Cliente;
   
-  constructor(private clienteService: ClienteService, private router: Router, private activatedRouter: ActivatedRoute, private location: Location, private modalService: ModalService){}
+  constructor(private clienteService: ClienteService, private router: Router, private activatedRouter: ActivatedRoute, private location: Location, private modalService: ModalService, private loginService:LoginService){}
 
   ngOnInit(): void {
     this.activatedRouter.paramMap.subscribe( params=>{
@@ -33,6 +36,7 @@ export class ClientesComponent implements OnInit{
             this.paginador=response;
           })
         ).subscribe();
+        
     });
     this.modalService.notificarUpload.subscribe(cliente=>{
       this.clientes=this.clientes.map(clienteOriginal=>{
@@ -63,6 +67,10 @@ export class ClientesComponent implements OnInit{
   mostrarContenido(permiso:string):boolean{
     return this.clienteService.verificarPermiso(permiso);
   }
+
+  
+
+
   
 
 }

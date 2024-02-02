@@ -15,7 +15,7 @@
                                     <li class="list-group-item">{{cliente.apellido}}</li>
                                     <li class="list-group-item">{{cliente.email}}</li>
                                     <li class="list-group-item">{{cliente.createAt}}</li>
-                                    <li *ngIf="cliente.region.nombre!=null" class="list-group-item">{{cliente.region.nombre}}</li>
+                                    <li *ngIf="cliente.region!==null" class="list-group-item">{{cliente.region.nombre}}</li>
                                 </ul>
                                 <div class="input-group" *ngIf="mostrarBotones('CARGAR_FOTO')">
                                     <div class="custom-file">
@@ -40,6 +40,41 @@
                             </div>
                         </div>
 
+                    </div>
+                    <div *ngIf="mostrarBotones('LISTAR_FACTURAS_POR_CLIENTE')">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Facturas</h5>
+                        </div>
+                        <div class="modal-header" *ngIf="mostrarBotones('CREAR_FACTURA')">
+                            <h5><button [routerLink]="['/facturas/form', cliente.id]" type="button" class="btn btn-primary">Crear factura</button></h5>
+                        </div>
+                        <div *ngIf="facturas?.length==0" class="modal-header">
+                            <h5>Este cliente aun no tiene facturas</h5>
+                        </div>
+                        <table class="table table-bordered table-striped" *ngIf="facturas?.length>0">
+                            <thead>
+                                <tr>
+                                    <th>descripcion</th>
+                                    <th>observacion</th>
+
+                                    <th>fecha-creacion</th>
+                                    <th>precio total</th>
+                                    <th>detalle</th>
+                                    <th *ngIf="mostrarBotones('ELIMINAR_FACTURA')">Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let factura of facturas">
+                                    <td>{{factura.descripcion}}</td>
+                                    <td>{{factura.observacion}}</td>
+                                    <td>{{factura.createAt | date:'dd/MM/yyyy'}}</td>
+                                    <td>{{factura.total}}</td>
+                                    <td><button [routerLink]="['/detalle/facturas', factura.id]" type="button" class="btn btn-info">Ver</button></td>
+                                    <td *ngIf="mostrarBotones('ELIMINAR_FACTURA')"><button (click)="eliminarFactura(factura.id)" type="button" class="btn btn-danger">X</button></td>
+                                </tr>
+                            </tbody>
+
+                        </table>
                     </div>
                 </div>
                 <div class="modal-footer">

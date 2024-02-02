@@ -6,11 +6,13 @@ import { ActivatedRoute } from '@angular/router';
 import swal from 'sweetalert2';
 import { HttpEventType } from '@angular/common/http';
 import { LoginService } from 'src/app/usuarios/login.service';
+import { Factura } from '../factura';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-detalle',
-  templateUrl: './detalle.component.html',
-  styleUrls: ['./detalle.component.css']
+  templateUrl: './detalle.component.html'
+  
 })
 export class DetalleComponent implements OnInit{
 
@@ -18,9 +20,18 @@ export class DetalleComponent implements OnInit{
   public imagenSeleccionada: File;
   progreso:number=0;
 
+  facturas: Factura[]=[];
+
   constructor(private clienteService: ClienteService, private activatedRoute: ActivatedRoute, public modalService: ModalService, private loginService:LoginService){}
 
   ngOnInit(): void {
+    if (this.loginService.tienePermiso('LISTAR_FACTURAS_POR_CLIENTE')) {
+      this.listarFacturas(this.cliente.id);
+      
+    }
+    
+      
+    
     
   }
 
@@ -63,6 +74,30 @@ export class DetalleComponent implements OnInit{
 
   mostrarBotones(permiso:string):boolean{
     return this.loginService.tienePermiso(permiso);
+  }
+
+  eliminarFactura(idFactura:number){
+    return this.clienteService.eliminarFactura(this.cliente.id, idFactura).subscribe(
+      response=>{
+        swal('Exito', response.mensaje, 'success');
+        this.facturas=this.facturas.filter((factura:Factura)=>factura.id!==idFactura);
+      }
+    )
+  }
+
+  listarFacturas(id:number):void{
+    this.clienteService.listarFacturas(id).pipe(
+      tap(response=>{
+        
+        this.facturas=response.facturas.content as Factura[];
+        console.log(this.facturas);
+        
+        
+      }
+        
+      )
+      
+    ).subscribe();
   }
 
 }    

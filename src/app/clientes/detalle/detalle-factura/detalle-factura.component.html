@@ -1,0 +1,29 @@
+<div class="card border-primary mb-3">
+    <div class="card-header">Detalle de factura</div>
+    <div class="card-body text-primary">
+        <h5 class="card-title">Listado de items</h5>
+        <table class="table">
+            <thead>
+                <tr>
+
+                    <th scope="col">cantidad</th>
+                    <th scope="col">nombre de producto</th>
+                    <th scope="col">precio del producto</th>
+                    <th scope="col" *ngIf="mostrarBotones('ELIMINAR_ITEM')">eliminar</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of itemsFactura">
+
+                    <td>{{item.cantidad}}</td>
+                    <td>{{item.nomProducto}}</td>
+                    <td>{{item.precioProducto}}</td>
+                    <td *ngIf="mostrarBotones('ELIMINAR_ITEM')"><button (click)="eliminarItem(item.id)" type="button" class="btn btn-danger">Eliminar</button></td>
+
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>

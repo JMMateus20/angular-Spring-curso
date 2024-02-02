@@ -10,6 +10,8 @@ export class ModalService {
 
   constructor() { }
 
+
+
   abrirModal(){
     this.modal=true;
   }
@@ -17,8 +19,8 @@ export class ModalService {
   cerrarModal(){
     this.modal=false;
   }
-
+  
+  
   
 
-  
 }

@@ -12,7 +12,7 @@ import { ClienteService } from './clientes/cliente.service';
 import { RouterModule, Routes } from '@angular/router';
 import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import { FormComponent } from './clientes/form/form.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { registerLocaleData } from '@angular/common';
 import localeES from '@angular/common/locales/es';
 import { PaginatorComponent } from './paginator/paginator.component';
@@ -27,6 +27,10 @@ import { loginGuard } from './usuarios/guards/login.guard';
 import { roleGuard } from './usuarios/guards/role.guard';
 import { TokenInterceptor } from './usuarios/interceptors/token.interceptor';
 import { ErrorInterceptor } from './usuarios/interceptors/error.interceptor';
+import { DetalleFacturaComponent } from './clientes/detalle/detalle-factura/detalle-factura.component';
+import { FacturaComponent } from './facturas/factura/factura.component';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatFormFieldModule} from '@angular/material/form-field';
 
 
 
@@ -43,7 +47,9 @@ const routes: Routes=[
   {path: 'clientes/page/:page', component: ClientesComponent},
   {path: 'clientes/upload/:id', component: DetalleComponent},
   {path: 'login', component: LoginComponent},
-  {path: 'main', component: MainComponent}
+  {path: 'main', component: MainComponent},
+  {path: 'detalle/facturas/:id', component: DetalleFacturaComponent},
+  {path: 'facturas/form/:clienteId', component: FacturaComponent}
 ]
 
 @NgModule({
@@ -57,7 +63,9 @@ const routes: Routes=[
     PaginatorComponent,
     DetalleComponent,
     LoginComponent,
-    MainComponent
+    MainComponent,
+    DetalleFacturaComponent,
+    FacturaComponent
   ],
   imports: [
     BrowserModule,
@@ -67,7 +75,11 @@ const routes: Routes=[
     BrowserAnimationsModule,
     MatDatepickerModule,
     MatMomentDateModule,
-    MatInputModule
+    MatInputModule,
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatInputModule,
+    MatFormFieldModule
   ],
   providers: [ClienteService, 
     {provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true},
