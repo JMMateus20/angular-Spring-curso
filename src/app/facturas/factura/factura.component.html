@@ -8,7 +8,8 @@
     <div class="card-header">Formulario de facturas</div>
     <div class="card-body">
 
-        <form #clienteForm="ngForm">
+        <form #facturaForm="ngForm">
+            <!--para validar cada campo desde el front directamente, colocamos al formulario un # con un nombre cualquiera y definido con ngForm-->
             <div class="form-group row">
                 <label for="nombre" class="col-form-label col-sm-2">Cliente</label>
                 <div class="col-sm-6">
@@ -19,7 +20,13 @@
             <div class="form-group row">
                 <label for="descripcion" class="col-form-label col-sm-2">Descripcion</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" [(ngModel)]="datos.descripcion" name="descripcion" #nombre="ngModel">
+                    <input type="text" class="form-control" [(ngModel)]="datos.descripcion" name="descripcion" required #descripcion="ngModel">
+                    <!--para validar un campo desde el frontend, colocamos un objeto # con cualquier nombre y lo definimos como ngModel-->
+                    <div class="alert alert-danger" *ngIf="descripcion.invalid && descripcion.touched">
+                        <!--Validar un campo desde el html directamente, se coloca en el input un # y le damos un nombre cualquiera y lo definimos como ngModel
+                        y le damos en el div de validacion un ngIf validando que el campo sea invalido y haya sido tocado con el mouse con touched-->
+                        La descripcion es requerida
+                    </div>
 
                 </div>
             </div>
@@ -85,7 +92,8 @@
 
             <div class="form-group row" *ngIf="items?.length>0">
                 <div class="col-sm-6">
-                    <button class="btn btn-primary" role="button" (click)="crearFactura()">crear</button>
+                    <button class="btn btn-primary" role="button" (click)="crearFactura()" [disabled]="facturaForm.form.invalid">crear</button>
+                    <!--utilizando el # que le dimos al formulario arriba, podemos deshabilitar el boton crear cuando el formulario o algun campo validado sea invalido-->
 
 
                 </div>

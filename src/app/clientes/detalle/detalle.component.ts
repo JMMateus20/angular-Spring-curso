@@ -8,6 +8,7 @@ import { HttpEventType } from '@angular/common/http';
 import { LoginService } from 'src/app/usuarios/login.service';
 import { Factura } from '../factura';
 import { tap } from 'rxjs';
+import { SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-detalle',
@@ -22,16 +23,24 @@ export class DetalleComponent implements OnInit{
 
   facturas: Factura[]=[];
 
-  constructor(private clienteService: ClienteService, private activatedRoute: ActivatedRoute, public modalService: ModalService, private loginService:LoginService){}
+  constructor(private clienteService: ClienteService, private activatedRoute: ActivatedRoute, public modalService: ModalService, public loginService:LoginService){}
 
   ngOnInit(): void {
+    
     if (this.loginService.tienePermiso('LISTAR_FACTURAS_POR_CLIENTE')) {
       this.listarFacturas(this.cliente.id);
       
     }
-    
-      
-    
+
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['cliente'] && !changes['cliente'].firstChange) {  //cuando el objeto cliente cambie, o sea el modal de un cliente distinto, se muestran las facturas de ese cliente
+      if (this.loginService.tienePermiso('LISTAR_FACTURAS_POR_CLIENTE')) {
+        this.listarFacturas(this.cliente.id);
+        
+      }
+    }
     
   }
 
@@ -86,6 +95,7 @@ export class DetalleComponent implements OnInit{
   }
 
   listarFacturas(id:number):void{
+    
     this.clienteService.listarFacturas(id).pipe(
       tap(response=>{
         

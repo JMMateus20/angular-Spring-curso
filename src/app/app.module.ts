@@ -48,8 +48,8 @@ const routes: Routes=[
   {path: 'clientes/upload/:id', component: DetalleComponent},
   {path: 'login', component: LoginComponent},
   {path: 'main', component: MainComponent},
-  {path: 'detalle/facturas/:id', component: DetalleFacturaComponent},
-  {path: 'facturas/form/:clienteId', component: FacturaComponent}
+  {path: 'detalle/facturas/:id', component: DetalleFacturaComponent, canActivate:[loginGuard, roleGuard], data:{permiso: 'LISTAR_ITEMS'}},     
+  {path: 'facturas/form/:clienteId', component: FacturaComponent, canActivate:[loginGuard, roleGuard], data:{permiso: 'CREAR_FACTURA'}}
 ]
 
 @NgModule({
